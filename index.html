@@ -1,78 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UPI Deep-Link Pay Button Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Payment Test</title>
   <style>
     body {
       margin: 0;
       height: 100vh;
-      background: #000;
-      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
+      background: black;
       font-family: 'Poppins', sans-serif;
+      color: white;
       text-align: center;
     }
-    .container {
-      padding: 20px;
-      background: #111;
-      border-radius: 12px;
-      max-width: 320px;
-      width: 100%;
-    }
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #444;
-      border-radius: 6px;
-      background: #222;
-      color: #fff;
-      outline: none;
-    }
-    button {
-      padding: 12px 24px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #00ffcc, #ff00ff);
-      color: #000;
+    .btn {
+      display: inline-block;
+      padding: 15px 30px;
+      font-size: 1.2rem;
       font-weight: bold;
+      color: black;
+      background: linear-gradient(90deg, #00ffcc, #ff00ff);
+      border-radius: 30px;
+      text-decoration: none;
       cursor: pointer;
+      transition: transform 0.2s ease-in-out;
     }
-    button:hover {
-      transform: scale(1.05);
-      transition: transform 0.2s;
-    }
-    .error {
-      color: #ff6666;
-      margin-top: 10px;
-      font-size: 0.9rem;
+    .btn:hover { transform: scale(1.1); }
+    .error { color: #ff4444; font-size: 1.2rem; }
+    pre {
+      text-align: left;
+      background: #111;
+      padding: 10px;
+      border-radius: 8px;
+      color: #0f0;
+      max-width: 90%;
+      margin: 20px auto;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Pay via UPI</h2>
-
-    <label>Receiver UPI ID</label>
-    <input id="upiPa" type="text" placeholder="success@upi" value="success@upi" />
-
-    <label>Receiver Name</label>
-    <input id="upiPn" type="text" placeholder="Receiver Name" value="Test Receiver" />
-
-    <label>Amount (₹)</label>
-    <input id="upiAmount" type="number" min="1" step="0.01" value="10" />
-
-    <label>Note</label>
-    <input id="upiTn" type="text" placeholder="testing payment" value="testing" />
-
-    <button id="payButton">💸 Pay Now</button>
-
-    <div id="errorMsg" class="error"></div>
+  <div id="content">
+    <h2>✨ UPI Test Payment ✨</h2>
+    <div id="action"></div>
+    <div id="response"></div>
   </div>
 
   <script>
@@ -80,46 +54,37 @@
       return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
 
-    function buildUpiLink(pa, pn, am, tn) {
-      const params = new URLSearchParams();
-      params.set('pa', pa.trim());
-      params.set('pn', pn.trim());
-      params.set('am', ('' + am).trim());
-      params.set('cu', 'INR');
-      if (tn && tn.trim() !== '') params.set('tn', tn.trim());
-      return 'upi://pay?' + params.toString();
+    // Helper: parse query params (for response display)
+    function parseQueryParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const pairs = queryString.split("&");
+      for (let p of pairs) {
+        if (!p) continue;
+        const [key, value] = p.split("=");
+        params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+      }
+      return params;
     }
 
-    function validate(pa, am) {
-      if (!pa || pa.indexOf('@') === -1) return 'Enter a valid UPI id (must contain @).';
-      const a = parseFloat(am);
-      if (isNaN(a) || a <= 0) return 'Enter a valid amount greater than 0.';
-      return null;
+    const actionDiv = document.getElementById('action');
+    const responseDiv = document.getElementById('response');
+
+    if (isMobile()) {
+      const upiLink = "upi://pay?pa=ved@sbi&pn=Ved%20Name&am=10&cu=INR&tn=testing";
+      actionDiv.innerHTML = `<a class="btn" href="${upiLink}">💸 Pay ₹10 via UPI</a>`;
+    } else {
+      actionDiv.innerHTML = `<div class="error">❌ UPI deep links only work on mobile browsers.<br> Please open this page on your phone 📱</div>`;
     }
 
-    document.getElementById('payButton').addEventListener('click', () => {
-      if (!isMobile()) {
-        document.getElementById('errorMsg').textContent = 'UPI payment works only on mobile phones with UPI apps installed.';
-        return;
-      }
-      const pa = document.getElementById('upiPa').value;
-      const pn = document.getElementById('upiPn').value;
-      const am = document.getElementById('upiAmount').value;
-      const tn = document.getElementById('upiTn').value;
-
-      const err = validate(pa, am);
-      if (err) {
-        document.getElementById('errorMsg').textContent = err;
-        return;
-      }
-
-      const upiLink = buildUpiLink(pa, pn, am, tn);
-      // Optionally show the link in console for debugging:
-      console.log('Launching UPI link: ', upiLink);
-
-      // Redirect to the UPI link to launch the UPI app
-      window.location.href = upiLink;
-    });
+    // If redirected back with response params, display them
+    const params = parseQueryParams();
+    if (Object.keys(params).length > 0) {
+      responseDiv.innerHTML = `
+        <h3>Payment Response</h3>
+        <pre>${JSON.stringify(params, null, 2)}</pre>
+      `;
+    }
   </script>
 </body>
 </html>
