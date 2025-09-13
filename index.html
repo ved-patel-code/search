@@ -71,7 +71,7 @@
     const responseDiv = document.getElementById('response');
 
     if (isMobile()) {
-      const upiLink = "upi://pay?pa=ved@oksbi&pn=Ved%20Name&am=10&cu=INR&tn=testing";
+      const upiLink = "upi://pay?pa=vdd&pn=ved@oksbi&am=10&cu=INR&tn=testing";
       actionDiv.innerHTML = `<a class="btn" href="${upiLink}">💸 Pay ₹10 via UPI</a>`;
     } else {
       actionDiv.innerHTML = `<div class="error">❌ UPI deep links only work on mobile browsers.<br> Please open this page on your phone 📱</div>`;
