@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Payment Test</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      text-align: center;
+    }
+    .btn {
+      display: inline-block;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: black;
+      background: linear-gradient(90deg, #00ffcc, #ff00ff);
+      border-radius: 30px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+    }
+    .btn:hover { transform: scale(1.1); }
+    .error { color: #ff4444; font-size: 1.2rem; }
+    pre {
+      text-align: left;
+      background: #111;
+      padding: 10px;
+      border-radius: 8px;
+      color: #0f0;
+      max-width: 90%;
+      margin: 20px auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h2>✨ UPI Test Payment ✨</h2>
+    <div id="action"></div>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    function isMobile() {
+      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    // Helper: parse query params (for response display)
+    function parseQueryParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const pairs = queryString.split("&");
+      for (let p of pairs) {
+        if (!p) continue;
+        const [key, value] = p.split("=");
+        params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+      }
+      return params;
+    }
+
+    const actionDiv = document.getElementById('action');
+    const responseDiv = document.getElementById('response');
+
+    if (isMobile()) {
+      const upiLink = "upi://pay?pa=ved@oksbi&pn=vedddd=10&cu=INR&tn=testing";
+      actionDiv.innerHTML = `<a class="btn" href="${upiLink}">💸 Pay ₹10 via UPI</a>`;
+    } else {
+      actionDiv.innerHTML = `<div class="error">❌ UPI deep links only work on mobile browsers.<br> Please open this page on your phone 📱</div>`;
+    }
+
+    // If redirected back with response params, display them
+    const params = parseQueryParams();
+    if (Object.keys(params).length > 0) {
+      responseDiv.innerHTML = `
+        <h3>Payment Response</h3>
+        <pre>${JSON.stringify(params, null, 2)}</pre>
+      `;
+    }
+  </script>
+</body>
+</html>
